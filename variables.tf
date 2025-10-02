@@ -1,3 +1,8 @@
+variable "oidc_provider_arn" {
+  description = "EKS OIDC provider ARN"
+  type        = string
+}
+
 variable "helm_releases" {
   description = "Map of Helm releases to deploy."
 
@@ -9,16 +14,10 @@ variable "helm_releases" {
     kubernetes_namespace = string
     values               = optional(list(string), [])
     tags                 = optional(map(string))
-  }))
-}
-
-variable "irsa" {
-  description = "Optional IRSA configuration for Helm releases."
-
-  type = map(object({
-    role_name       = string
-    policy_arn      = string
-    namespace       = string
-    service_account = string
+    irsa = optional(object({
+      role_name      = string
+      policy_arn     = string
+      serviceaccount = string
+    }))
   }))
 }
