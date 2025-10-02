@@ -11,3 +11,14 @@ variable "helm_releases" {
     tags                 = optional(map(string))
   }))
 }
+
+variable "irsa" {
+  description = "Optional IRSA configuration for Helm releases."
+
+  type = map(object({
+    role_name       = string
+    policy_arn      = string
+    namespace       = string
+    service_account = string
+  }))
+}
