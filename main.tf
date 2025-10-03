@@ -15,7 +15,7 @@ resource "aws_iam_role" "irsa" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${replace(var.oidc_provider_arn, "arn:aws:iam::", "")}:sub" = "system:serviceaccount:${each.value.kubernetes_namespace}:${each.value.irsa.serviceaccount}"
+          "${replace(var.oidc_provider_arn, "arn:aws:iam::", "")}:sub" = "system:serviceaccount:${each.value.kubernetes_namespace}:${each.value.irsa.serviceaccount_name}"
         }
       }
     }]
@@ -51,7 +51,8 @@ resource "helm_release" "this" {
     try(each.value.irsa, null) != null ? [
       yamlencode({
         serviceAccount = {
-          name = each.value.irsa.serviceaccount
+          name   = each.value.irsa.serviceaccount_name
+          create = true
           annotations = {
             "eks.amazonaws.com/role-arn" = aws_iam_role.irsa[each.key].arn
           }

@@ -15,9 +15,14 @@ variable "helm_releases" {
     values               = optional(list(string), [])
     tags                 = optional(map(string))
     irsa = optional(object({
-      role_name      = string
-      policy_arn     = string
-      serviceaccount = string
+      role_name           = string
+      policy_arn          = string
+      serviceaccount_name = string
     }))
   }))
+}
+
+variable "cluster_name" {
+  description = "Name of the Kubernetes cluster"
+  type        = string
 }
