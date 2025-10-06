@@ -40,24 +40,29 @@ resource "helm_release" "this" {
   version          = each.value.chart_version
   create_namespace = each.value.create_namespace
   namespace        = each.value.kubernetes_namespace
+  force_update     = each.value.force_update
   atomic           = true
   cleanup_on_fail  = true
 
-  values = concat(
-    each.value.values,
-    lookup(each.value, "tags", null) != null ? [
-      yamlencode({ tags = each.value.tags })
-    ] : [],
-    try(each.value.irsa, null) != null ? [
-      yamlencode({
-        serviceAccount = {
-          name   = each.value.irsa.serviceaccount_name
-          create = true
-          annotations = {
-            "eks.amazonaws.com/role-arn" = aws_iam_role.irsa[each.key].arn
-          }
-        }
-      })
-    ] : []
-  )
+  set = try(each.value.irsa, null) != null ? [
+    {
+      name  = each.value.irsa.serviceaccount_set_name_path
+      value = each.value.irsa.serviceaccount_name
+    },
+    {
+      name  = each.value.irsa.serviceaccount_set_create_path
+      value = true
+    },
+    {
+      name  = each.value.irsa.serviceaccount_set_annotations_path
+      value = aws_iam_role.irsa[each.key].arn
+    }
+  ] : []
+
+  values = [
+    yamlencode(merge(
+      length(each.value.values) > 0 ? yamldecode(join("\n", each.value.values)) : {},
+      lookup(each.value, "tags", null) != null ? { tags = each.value.tags } : {}
+    ))
+  ]
 }
