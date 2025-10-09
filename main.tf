@@ -41,8 +41,9 @@ resource "helm_release" "this" {
   create_namespace = each.value.create_namespace
   namespace        = each.value.kubernetes_namespace
   force_update     = each.value.force_update
-  atomic           = true
-  cleanup_on_fail  = true
+  atomic           = each.value.atomic
+  cleanup_on_fail  = each.value.cleanup_on_fail
+  values           = each.value.values
 
   set = try(each.value.irsa, null) != null ? [
     {
@@ -59,10 +60,4 @@ resource "helm_release" "this" {
     }
   ] : []
 
-  values = [
-    yamlencode(merge(
-      length(each.value.values) > 0 ? yamldecode(join("\n", each.value.values)) : {},
-      lookup(each.value, "tags", null) != null ? { tags = each.value.tags } : {}
-    ))
-  ]
 }

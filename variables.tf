@@ -10,8 +10,10 @@ variable "helm_releases" {
     repository           = string
     chart                = string
     chart_version        = string
-    create_namespace     = bool
+    create_namespace     = optional(bool, false)
     kubernetes_namespace = string
+    atomic               = optional(bool, true)
+    cleanup_on_fail      = optional(bool, true)
     force_update         = optional(bool, true)
     values               = optional(list(string), [])
     tags                 = optional(map(string))
